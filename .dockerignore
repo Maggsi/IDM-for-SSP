@@ -1,0 +1,23 @@
+# Keep the build context small: everything here is NOT sent to the builder.
+# (COPY . . copies the context minus these paths — see docker/idm/Dockerfile.)
+
+# node tooling (built on the host; public/build/ is what we need)
+node_modules/
+tools/
+
+# tests + dev-only config (the image is built with composer install --no-dev)
+tests/
+.php-cs-fixer*
+.rector*
+
+# git + local env
+.git/
+.gitignore
+.env
+.env.*
+*.local
+
+# IDE / OS noise
+.idea/
+.vscode/
+.DS_Store

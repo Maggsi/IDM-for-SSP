@@ -2,6 +2,22 @@
 
 Identity management and authorization provider which is used by KLMS.
 
+## Docker
+
+This repo can be run as a self-contained `podman` image (the `idm` service in
+the [KLMS-for-SSP](https://github.com/Maggsi/KLMS-for-SSP) docker stack, branch
+`docker-dot-lan`). See [`docker/README.md`](docker/README.md) for the full
+walkthrough. Quick build:
+
+```bash
+# from the repo root (the build context is the repo root)
+podman build -f docker/idm/Dockerfile -t klms-dot-idm .
+```
+
+The image serves the app on port **8095** (internal only) and performs the
+schema bootstrap + first-run init (IDM API key + default admin) automatically on
+first boot.
+
 ## Installation
 
 ```
