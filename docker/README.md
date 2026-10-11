@@ -85,4 +85,4 @@ covers the slow first boot (`doctrine:schema:create` + Symfony console boot).
   break `bin/console` boot).
 - **Production:** for a real deploy, swap `php -S` for `php-fpm` + a reverse
   proxy (nginx/Traefik) — only the entrypoint and a service change. This stack
-  is the bigboy test environment (no internet exposure).
+  is a local test environment (no internet exposure).
