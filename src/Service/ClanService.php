@@ -28,7 +28,7 @@ class ClanService
         $hasher = $this->hasherFactory->getPasswordHasher(Clan::class);
 
         $valid = $hasher->verify($clan->getJoinPassword(), $password);
-        if ($hasher->needsRehash($clan->getJoinPassword())) {
+        if ($valid && $hasher->needsRehash($clan->getJoinPassword())) {
             // Rehash legacy Password if needed
             $clan->setJoinPassword($hasher->hash($password));
             $this->em->flush();
