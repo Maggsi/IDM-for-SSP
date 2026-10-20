@@ -1,9 +1,14 @@
 # Docker image for IDM-for-SSP
 
 A self-contained `podman`/`docker` image for the **IDM** (KRRU LAN-Party
-Identity Management) fork, as used by the KLMS-for-SSP docker stack. It is the
-`idm` service in `Maggsi/KLMS-for-SSP` (branch `docker-dot-lan`) — this repo
-supplies the build context, that repo supplies the `compose.yaml`.
+Identity Management) fork, as used by the KLMS-for-SSP docker stack. This
+repo is the **source of truth for the IDM image build** (`docker/idm/Dockerfile`
++ entrypoint/router); the full-stack `compose.yaml` that orchestrates IDM
+together with KLMS, PostgreSQL and nginx lives in
+**[Maggsi/KLMS-for-SSP](https://github.com/Maggsi/KLMS-for-SSP) (branch
+`main`, file `docker/compose.yaml`, service `idm`)** — that repo's
+[`docker/README.md`](https://github.com/Maggsi/KLMS-for-SSP/blob/main/docker/README.md)
+documents bringing this image into the stack.
 
 The image runs the Symfony app on the PHP built-in server (`php -S`) on port
 **8095** (internal only — the KLMS reaches it over the docker network at
@@ -83,6 +88,6 @@ covers the slow first boot (`doctrine:schema:create` + Symfony console boot).
 - **`--classmap-authoritative` must NOT be used** for `composer dump-autoload`
   (dev-only bundles are excluded by `--no-dev`; an authoritative classmap would
   break `bin/console` boot).
-- **Production:** for a real deploy, swap `php -S` for `php-fpm` + a reverse
-  proxy (nginx/Traefik) — only the entrypoint and a service change. This stack
-  is a local test environment (no internet exposure).
+- **Web tier:** `php -S` is fine for the LAN/internal service (KLMS reaches it
+  on the docker network only; nothing is exposed to the internet). If it ever
+  needs to face clients directly, swap to `php-fpm` behind the stack's nginx.

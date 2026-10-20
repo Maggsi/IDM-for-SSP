@@ -4,10 +4,13 @@ Identity management and authorization provider which is used by KLMS.
 
 ## Docker
 
-This repo can be run as a self-contained `podman` image (the `idm` service in
-the [KLMS-for-SSP](https://github.com/Maggsi/KLMS-for-SSP) docker stack, branch
-`docker-dot-lan`). See [`docker/README.md`](docker/README.md) for the full
-walkthrough. Quick build:
+This repo is the source of truth for the IDM docker **image build**
+(`docker/idm/Dockerfile` + entrypoint/router, branch `main`). The full-stack
+`compose.yaml` that runs IDM together with KLMS, PostgreSQL and nginx lives in
+the [KLMS-for-SSP](https://github.com/Maggsi/KLMS-for-SSP) repo (branch `main`,
+`docker/compose.yaml`, service `idm`) — build the image here, then reference it
+from there. See [`docker/README.md`](docker/README.md) for the full walkthrough.
+Quick build:
 
 ```bash
 # from the repo root (the build context is the repo root)

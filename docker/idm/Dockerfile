@@ -20,8 +20,12 @@ COPY . .
 # Minimal placeholder .env so Dotenv::loadEnv('/app/.env') finds the file.
 # (Real values are injected at runtime via compose `environment:`.)
 COPY docker/.env.placeholder .env
+# See docker/klms/Dockerfile: composer >=2.10 as root without
+# COMPOSER_ALLOW_SUPERUSER disables plugins -> missing vendor/autoload_runtime.php.
+ENV COMPOSER_ALLOW_SUPERUSER=1
 RUN composer install --no-dev --no-interaction --prefer-dist --no-scripts \
     && composer dump-autoload --no-dev \
+    && test -f vendor/autoload_runtime.php \
     && mkdir -p var/cache var/log
 
 # --- non-root runtime user ---
