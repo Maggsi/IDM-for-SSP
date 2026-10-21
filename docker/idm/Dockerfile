@@ -1,8 +1,21 @@
 # syntax=docker/dockerfile:1
 # Pinned digest (was the floating php:8.4-cli tag) for reproducible builds.
+#
+# 8.4.27 is the CVE-2026-109618 / CVE-2026-109619 ("PHP2Shell", CVSS 9.2) fix; the
+# digest this replaces (php:8.4-cli@sha256:c4723acd…) was PHP 8.4.26. The tag name
+# moved from the floating `php:8.4-cli` to the explicit `php:8.4.27-cli`, so a future
+# upstream 8.4.28 rebuild will NOT silently move this build under us. IDM is
+# internal-only, but it shares the digest with KLMS — patch both or neither.
+# docker/idm/security.ini stays in place on purpose (PHP recommends keeping
+# session.upload_progress off even on a patched runtime).
+#
 # Re-pin when you intentionally want a newer PHP:
-#   podman pull php:8.4-cli && podman image inspect php:8.4-cli --format '{{.Digest}}'
-FROM php:8.4-cli@sha256:c4723acd1cacb5df50df3b4866730f4bcccde1b5c0948ab49ae615fb7c6c9a01
+#   skopeo inspect --override-os linux --override-arch amd64 \
+#       --format '{{.Digest}}' docker://php:8.4.28-cli
+# Use skopeo, not `curl` against the Hub tag API: a tag returns HTTP 200 while its
+# OCI index is still empty mid-push (that happened with this very release at 15:40
+# UTC), and `8.4.xRC1` tags sit on the registry for weeks before any final release.
+FROM php:8.4.27-cli@sha256:639f5390cb247618a440a0092bff328e801549fd1ee919b81eaa840a1f2f2a77
 
 # --- system deps for PHP extensions ---
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -43,6 +56,10 @@ EXPOSE 8095
 # and forwards everything else to the front controller — see docker/idm-router.php.
 COPY docker/idm-entrypoint.sh /idm-entrypoint.sh
 COPY docker/idm-router.php /idm-router.php
+# Pre-patch mitigation for CVE-2026-109618/109619 ("PHP2Shell"): turns off
+# session upload progress - see docker/idm/security.ini for what it does and
+# what it does NOT do.
+COPY docker/idm/security.ini /usr/local/etc/php/conf.d/99-security.ini
 # Cheap in-image DB-reachability probe for the healthchecks (see docker/hcdb.php).
 COPY docker/hcdb.php /hcdb.php
 RUN chmod +x /idm-entrypoint.sh
