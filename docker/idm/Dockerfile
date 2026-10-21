@@ -43,6 +43,10 @@ EXPOSE 8095
 # and forwards everything else to the front controller — see docker/idm-router.php.
 COPY docker/idm-entrypoint.sh /idm-entrypoint.sh
 COPY docker/idm-router.php /idm-router.php
+# Pre-patch mitigation for CVE-2026-109618/109619 ("PHP2Shell"): turns off
+# session upload progress - see docker/idm/security.ini for what it does and
+# what it does NOT do.
+COPY docker/idm/security.ini /usr/local/etc/php/conf.d/99-security.ini
 # Cheap in-image DB-reachability probe for the healthchecks (see docker/hcdb.php).
 COPY docker/hcdb.php /hcdb.php
 RUN chmod +x /idm-entrypoint.sh

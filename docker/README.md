@@ -19,6 +19,7 @@ The image runs the Symfony app on the PHP built-in server (`php -S`) on port
 | File                    | Purpose                                                        |
 |-------------------------|----------------------------------------------------------------|
 | `docker/idm/Dockerfile` | Builds the image (pinned `php:8.4-cli` digest, non-root user). |
+| `docker/idm/security.ini` | Pre-patch mitigation for CVE-2026-109618/109619 ("PHP2Shell") — turns off `session.upload_progress`; installed to `/usr/local/etc/php/conf.d/99-security.ini`. |
 | `docker/idm-entrypoint.sh` | First-boot schema bootstrap + first-run init, then `php -S`. |
 | `docker/idm-router.php` | Router for `php -S` (static files native, else front controller). |
 | `docker/.env.placeholder` | Minimal `.env` baked in so `Dotenv::loadEnv` finds a file.  |
@@ -88,6 +89,11 @@ covers the slow first boot (`doctrine:schema:create` + Symfony console boot).
 - **`--classmap-authoritative` must NOT be used** for `composer dump-autoload`
   (dev-only bundles are excluded by `--no-dev`; an authoritative classmap would
   break `bin/console` boot).
+- **`session.upload_progress` is OFF** (`docker/idm/security.ini`) as a pre-patch
+  mitigation for CVE-2026-109618/109619 — see that file for what it does and
+  does not cover. It costs nothing here: IDM is a JSON API with no upload
+  endpoint. Verify after deploy:
+  `docker exec <idm-container> php -i | grep upload_progress.enabled` → `Off`.
 - **Web tier:** `php -S` is fine for the LAN/internal service (KLMS reaches it
   on the docker network only; nothing is exposed to the internet). If it ever
   needs to face clients directly, swap to `php-fpm` behind the stack's nginx.
