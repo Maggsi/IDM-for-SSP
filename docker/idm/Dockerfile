@@ -2,7 +2,11 @@
 # Pinned digest (was the floating php:8.4-cli tag) for reproducible builds.
 # Re-pin when you intentionally want a newer PHP:
 #   podman pull php:8.4-cli && podman image inspect php:8.4-cli --format '{{.Digest}}'
-FROM php:8.4-cli@sha256:c4723acd1cacb5df50df3b4866730f4bcccde1b5c0948ab49ae615fb7c6c9a01
+# 8.4.27 = the CVE-2026-109618 / CVE-2026-109619 ("PHP2Shell", CVSS 9.2) fix; the digest it
+# replaces (php:8.4-cli@sha256:c4723acd…) was PHP 8.4.26. Deliberately the ONLY
+# runtime change on this build: it is cut from the commit prod runs (17b629e), so no
+# app-code or composer drift rides along with a security patch.
+FROM php:8.4.27-cli@sha256:639f5390cb247618a440a0092bff328e801549fd1ee919b81eaa840a1f2f2a77
 
 # --- system deps for PHP extensions ---
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -40,6 +44,8 @@ EXPOSE 8095
 COPY docker/idm-entrypoint.sh /idm-entrypoint.sh
 COPY docker/idm-router.php /idm-router.php
 # Cheap in-image DB-reachability probe for the healthchecks (see docker/hcdb.php).
+# Mitigation for CVE-2026-109618/109619: session.upload_progress off (see that file).
+COPY docker/idm/security.ini /usr/local/etc/php/conf.d/99-security.ini
 COPY docker/hcdb.php /hcdb.php
 RUN chmod +x /idm-entrypoint.sh
 
